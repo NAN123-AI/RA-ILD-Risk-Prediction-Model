@@ -6,12 +6,9 @@ import base64
 # ===== 页面配置 =====
 st.set_page_config(page_title="RA-ILD风险预测模型", layout="wide")
 
-# ===== 上传背景图片 =====
-st.sidebar.header("📤 上传肺部背景图（PNG/JPG）")
-uploaded_file = st.sidebar.file_uploader("选择肺图", type=["png","jpg","jpeg"])
-
+# ===== 背景图片（项目文件夹里的 lung.png） =====
 def set_background(png_file):
-    """设置背景图片，使用 base64 嵌入避免跨域问题"""
+    """把本地图片作为背景，使用 base64 嵌入"""
     with open(png_file, "rb") as f:
         data = f.read()
     b64 = base64.b64encode(data).decode()
@@ -52,13 +49,8 @@ def set_background(png_file):
     """
     st.markdown(css, unsafe_allow_html=True)
 
-# 如果上传了图片就设置背景
-if uploaded_file:
-    with open("lung_temp.png","wb") as f:
-        f.write(uploaded_file.getbuffer())
-    set_background("lung_temp.png")
-else:
-    st.info("请在左侧上传肺图以显示背景（可选）")
+# ===== 使用本地肺图作为背景 =====
+set_background("lung.png")  # 注意 lung.png 已经在项目文件夹里
 
 # ===== 页面标题 =====
 st.title("RA-ILD风险预测模型（论文一致版）")
