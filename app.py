@@ -1,55 +1,64 @@
 # app.py
 import streamlit as st
 import numpy as np
+import base64
 
 # ===== 页面配置 =====
 st.set_page_config(page_title="RA-ILD风险预测模型", layout="wide")
 
-# ===== 背景 + CSS（网络肺图，确保显示） =====
-st.markdown("""
-<style>
-/* 页面背景（网络肺图） */
-body {
-    background-image: url("https://upload.wikimedia.org/wikipedia/commons/8/88/Lungs_anterior.png") !important;
-    background-size: cover !important;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
-    background-attachment: fixed !important;
-}
+# ===== 上传背景图片 =====
+st.sidebar.header("📤 上传肺部背景图（PNG/JPG）")
+uploaded_file = st.sidebar.file_uploader("选择肺图", type=["png","jpg","jpeg"])
 
-/* 半透明浮动卡片 */
-.stContainer {
-    background: rgba(255, 255, 255, 0.85) !important;
-    padding: 25px !important;
-    border-radius: 20px !important;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important;
-    margin: 20px !important;
-    position: relative !important;
-    z-index: 999 !important;
-}
+def set_background(png_file):
+    """设置背景图片，使用 base64 嵌入避免跨域问题"""
+    with open(png_file, "rb") as f:
+        data = f.read()
+    b64 = base64.b64encode(data).decode()
+    css = f"""
+    <style>
+    body {{
+        background-image: url("data:image/png;base64,{b64}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
+    .stContainer {{
+        background: rgba(255,255,255,0.85);
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        margin: 20px;
+        position: relative;
+        z-index: 999;
+    }}
+    h1, h2, h3, h4, h5, h6, .stMarkdown {{
+        color: #1a1a1a;
+        font-weight: bold;
+    }}
+    div.stSlider, div.stRadio {{
+        color: #1a1a1a;
+        font-weight: bold;
+    }}
+    div[data-testid="metric-container"] {{
+        background: rgba(240, 240, 240, 0.9);
+        padding: 15px;
+        border-radius: 15px;
+        width: 220px;
+        text-align: center;
+    }}
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
 
-/* 标题、文本 */
-h1, h2, h3, h4, h5, h6, .stMarkdown {
-    color: #1a1a1a !important;
-    font-weight: bold !important;
-}
-
-/* 滑块文字 */
-div.stSlider, div.stRadio {
-    color: #1a1a1a !important;
-    font-weight: bold !important;
-}
-
-/* Metric显示 */
-div[data-testid="metric-container"] {
-    background: rgba(240, 240, 240, 0.9) !important;
-    padding: 15px !important;
-    border-radius: 15px !important;
-    width: 220px !important;
-    text-align: center !important;
-}
-</style>
-""", unsafe_allow_html=True)
+# 如果上传了图片就设置背景
+if uploaded_file:
+    with open("lung_temp.png","wb") as f:
+        f.write(uploaded_file.getbuffer())
+    set_background("lung_temp.png")
+else:
+    st.info("请在左侧上传肺图以显示背景（可选）")
 
 # ===== 页面标题 =====
 st.title("RA-ILD风险预测模型（论文一致版）")
